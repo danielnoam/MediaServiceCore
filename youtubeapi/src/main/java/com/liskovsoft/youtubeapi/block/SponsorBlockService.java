@@ -1,6 +1,7 @@
 package com.liskovsoft.youtubeapi.block;
 
 import com.liskovsoft.sharedutils.prefs.GlobalPreferences;
+import com.liskovsoft.youtubeapi.block.data.HashedSegmentList;
 import com.liskovsoft.youtubeapi.block.data.SegmentList;
 import com.liskovsoft.googlecommon.common.helpers.RetrofitHelper;
 import com.liskovsoft.googlecommon.common.helpers.ServiceHelper;
@@ -25,10 +26,15 @@ public class SponsorBlockService {
     }
 
     public SegmentList getSegmentList(String videoId) {
-        Call<SegmentList> wrapper =
-                isAltServerEnabled() ? mSponsorBlockApi.getSegments2(videoId) : mSponsorBlockApi.getSegments(videoId);
+        if (videoId == null) {
+            return null;
+        }
 
-        return RetrofitHelper.get(wrapper);
+        String prefix = SponsorBlockApiHelper.hashPrefix(videoId);
+        Call<HashedSegmentList> wrapper =
+                isAltServerEnabled() ? mSponsorBlockApi.getSegments2(prefix) : mSponsorBlockApi.getSegments(prefix);
+
+        return pick(RetrofitHelper.get(wrapper), videoId);
     }
 
     public SegmentList getSegmentList(String videoId, Set<String> categories) {
@@ -36,11 +42,21 @@ public class SponsorBlockService {
     }
 
     private SegmentList getSegmentListInt(String videoId, Set<String> categories) {
-        Call<SegmentList> wrapper = isAltServerEnabled() ?
-                mSponsorBlockApi.getSegments2(videoId, ServiceHelper.toJsonArrayString(categories)) :
-                mSponsorBlockApi.getSegments(videoId, ServiceHelper.toJsonArrayString(categories));
+        if (videoId == null) {
+            return null;
+        }
 
-        return RetrofitHelper.get(wrapper);
+        String prefix = SponsorBlockApiHelper.hashPrefix(videoId);
+        String categoriesJson = ServiceHelper.toJsonArrayString(categories);
+        Call<HashedSegmentList> wrapper = isAltServerEnabled() ?
+                mSponsorBlockApi.getSegments2(prefix, categoriesJson) :
+                mSponsorBlockApi.getSegments(prefix, categoriesJson);
+
+        return pick(RetrofitHelper.get(wrapper), videoId);
+    }
+
+    private static SegmentList pick(HashedSegmentList list, String videoId) {
+        return list != null ? list.getSegmentList(videoId) : null;
     }
 
     private boolean isAltServerEnabled() {
