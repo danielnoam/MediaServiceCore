@@ -2,7 +2,6 @@ package com.liskovsoft.youtubeapi.app
 
 import com.liskovsoft.sharedutils.mylogger.Log
 import com.liskovsoft.youtubeapi.app.potoken.PoTokenService
-import com.liskovsoft.youtubeapi.app.potokencloud.PoTokenCloudService
 import com.liskovsoft.youtubeapi.app.potokennp2.PoTokenProviderImpl
 import com.liskovsoft.youtubeapi.app.potokennp2.core.PoTokenResult
 import com.liskovsoft.youtubeapi.app.potokennp2.misc.selectFactory
@@ -101,7 +100,7 @@ internal object PoTokenGate {
                 markWebPoTokenCreated()
             }
             mWebPoToken?.streamingDataPoToken
-        } else PoTokenCloudService.getPoToken()
+        } else null // RETUBE(privacy): no third-party token server - it was sent the visitor id
     }
     
     private fun updatePoToken() {
@@ -109,8 +108,6 @@ internal object PoTokenGate {
             //mNpPoToken = null // only refresh
             mWebPoToken = PoTokenProviderImpl.getWebClientPoToken("") // refresh and preload
             markWebPoTokenCreated()
-        } else {
-            PoTokenCloudService.updatePoToken()
         }
     }
 
@@ -355,8 +352,7 @@ internal object PoTokenGate {
             mWebPoToken = null
             mWebPoTokenCreatedAtMs = -1
             PoTokenProviderImpl.resetCache()
-        } else
-            PoTokenCloudService.resetCache()
+        }
 
         mCacheResetTimeMs = currentTimeMs + 60_000
 

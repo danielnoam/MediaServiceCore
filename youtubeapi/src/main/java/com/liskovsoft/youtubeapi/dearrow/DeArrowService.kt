@@ -2,6 +2,7 @@ package com.liskovsoft.youtubeapi.dearrow
 
 import com.liskovsoft.mediaserviceinterfaces.data.DeArrowData
 import com.liskovsoft.googlecommon.common.helpers.RetrofitHelper
+import com.liskovsoft.youtubeapi.block.SponsorBlockApiHelper
 
 internal object DeArrowService {
     private val mDeArrowApi = RetrofitHelper.create(DeArrowApi::class.java)
@@ -12,9 +13,11 @@ internal object DeArrowService {
             return null
         }
 
-        val branding = mDeArrowApi.getBranding(videoId)
+        val branding = mDeArrowApi.getBranding(SponsorBlockApiHelper.hashPrefix(videoId))
 
-        return RetrofitHelper.get(branding)?.let {
+        // The thumbnail URL below still names the video, but it is only built (and loaded) for a
+        // video that has a community thumbnail - DeArrow's renderer has no hash-prefix form.
+        return RetrofitHelper.get(branding)?.get(videoId)?.let {
             object : DeArrowData {
                 override fun getVideoId(): String {
                     return videoId

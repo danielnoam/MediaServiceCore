@@ -1,6 +1,7 @@
 package com.liskovsoft.youtubeapi.dearrow
 
 import com.liskovsoft.googlecommon.common.helpers.RetrofitHelper
+import com.liskovsoft.youtubeapi.block.SponsorBlockApiHelper
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -25,8 +26,8 @@ class DeArrowApiTest {
 
     @Test
     fun testThatBrandingResultNotEmpty() {
-        val wrapper = mService!!.getBranding(VIDEO_ID)
-        val brandingList = RetrofitHelper.get(wrapper)
+        val wrapper = mService!!.getBranding(SponsorBlockApiHelper.hashPrefix(VIDEO_ID))
+        val brandingList = RetrofitHelper.get(wrapper)?.get(VIDEO_ID)
         val titles = brandingList?.titles
         val thumbnails = brandingList?.thumbnails
         Assert.assertFalse("Title list not empty", titles?.isEmpty() ?: true)

@@ -1,6 +1,7 @@
 package com.liskovsoft.youtubeapi.block;
 
 import com.liskovsoft.mediaserviceinterfaces.data.SponsorSegment;
+import com.liskovsoft.youtubeapi.block.data.HashedSegmentList;
 import com.liskovsoft.youtubeapi.block.data.Segment;
 import com.liskovsoft.youtubeapi.block.data.SegmentList;
 import com.liskovsoft.googlecommon.common.helpers.ServiceHelper;
@@ -14,6 +15,7 @@ import retrofit2.Call;
 
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -34,10 +36,15 @@ public class SponsorBlockApiTest {
     }
 
     @Test
-    public void testThatSegmentResultNotEmpty() {
-        Call<SegmentList> wrapper = mService.getSegments(VIDEO_ID);
+    public void testHashPrefixIsFirstFourHexCharsOfSha256() {
+        assertEquals("46cb", SponsorBlockApiHelper.hashPrefix(VIDEO_ID)); // sha256("0e3GPea1Tyg")
+    }
 
-        SegmentList segmentList = RetrofitHelper.get(wrapper);
+    @Test
+    public void testThatSegmentResultNotEmpty() {
+        Call<HashedSegmentList> wrapper = mService.getSegments(SponsorBlockApiHelper.hashPrefix(VIDEO_ID));
+
+        SegmentList segmentList = RetrofitHelper.get(wrapper).getSegmentList(VIDEO_ID);
 
         List<Segment> segments = segmentList.getSegments();
 
@@ -53,14 +60,14 @@ public class SponsorBlockApiTest {
 
     @Test
     public void testThatSegmentByCategoryResultNotEmpty() {
-        Call<SegmentList> wrapper = mService.getSegments(
-                VIDEO_ID, ServiceHelper.toJsonArrayString(
+        Call<HashedSegmentList> wrapper = mService.getSegments(
+                SponsorBlockApiHelper.hashPrefix(VIDEO_ID), ServiceHelper.toJsonArrayString(
                         SponsorSegment.CATEGORY_SPONSOR, SponsorSegment.CATEGORY_INTRO, SponsorSegment.CATEGORY_OUTRO,
                         SponsorSegment.CATEGORY_INTERACTION, SponsorSegment.CATEGORY_SELF_PROMO, SponsorSegment.CATEGORY_MUSIC_OFF_TOPIC
                 )
         );
 
-        SegmentList segmentList = RetrofitHelper.get(wrapper);
+        SegmentList segmentList = RetrofitHelper.get(wrapper).getSegmentList(VIDEO_ID);
 
         List<Segment> segments = segmentList.getSegments();
 
